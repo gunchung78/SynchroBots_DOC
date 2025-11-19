@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant User as 사용자
+    participant Browser as 브라우저 (HTML+JS)
+    participant Web as Web 라우트 (web/dashboard/routes.py)
+    participant API as API 라우트 (api/v1/dashboard_api.py)
+    participant DB as DB (예: MySQL)
+
+    %% 1) 대시보드 화면 열기 (HTML 렌더링)
+    User->>Browser: /dashboard 주소 접속
+    Browser->>Web: GET /dashboard
+    Web-->>Browser: dashboard/index.html 렌더링
+    Browser-->>User: 대시보드 화면 표시
+
+    Note over Browser: 페이지 로드 후 JS 실행<br/>초기 데이터 조회 요청
+
+    %% 2) DB에서 데이터 조회 (READ)
+    Browser->>API: GET /api/v1/dashboard/data<br/>(AJAX / fetch)
+    API->>DB: SELECT ... FROM ...
+    DB-->>API: 조회 결과 rows
+    API-->>Browser: JSON 데이터
+    Browser-->>User: 테이블/그래프에 데이터 표시
+
+    Note over User,Browser: 사용자가 화면에서 값 수정 후 "저장" 클릭
+
+    %% 3) DB에 데이터 저장 (CREATE/UPDATE)
+    User->>Browser: "저장" 버튼 클릭
+    Browser->>API: POST /api/v1/dashboard/data<br/>(폼/JSON 전송)
+    API->>DB: INSERT/UPDATE 쿼리 실행
+    DB-->>API: 성공 결과 (OK)
+    API-->>Browser: { "success": true }
+    Browser-->>User: "저장 완료" 메시지 표시 및 화면 갱신

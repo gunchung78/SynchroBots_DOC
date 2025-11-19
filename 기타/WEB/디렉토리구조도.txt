@@ -1,0 +1,69 @@
+KG_FinalProject/
+│
+├── myenv/                          # (선택) 프로젝트용 가상환경 - 프로젝트 밖에 두는 걸 추천
+│
+└── SynchroBots_web/
+    │
+    ├── run.py                      # Flask 실행 엔트리 포인트
+    ├── config.py                   # 공통 설정 (SECRET_KEY, DB URL 등)
+    ├── requirements.txt            # 의존성 패키지 목록
+    │
+    ├── app/
+    │   ├── __init__.py             # create_app() 정의, Blueprint 등록
+    │   │
+    │   ├── web/                    # 🌐 화면(HTML) 제공 라우트
+    │   │   ├── __init__.py
+    │   │   ├── dashboard/
+    │   │   │   ├── __init__.py
+    │   │   │   └── routes.py       # /dashboard → HTML 렌더링
+    │   │   ├── log/
+    │   │   │   ├── __init__.py
+    │   │   │   └── routes.py       # /log → HTML 렌더링
+    │   │   └── agv/
+    │   │       ├── __init__.py
+    │   │       └── routes.py       # /agv → HTML 렌더링
+    │   │
+    │   ├── api/                    # 🔧 기능/데이터(API) 라우트
+    │   │   ├── __init__.py
+    │   │   └── v1/
+    │   │       ├── __init__.py
+    │   │       ├── dashboard_api.py   # /api/v1/dashboard/...  (DB 조회/저장)
+    │   │       ├── agv_api.py         # /api/v1/agv/...        (AGV 상태, 로그)
+    │   │       └── log_api.py         # /api/v1/log/...        (이벤트 로그 API)
+    │   │
+    │   ├── templates/              # 🧩 HTML (Jinja2 템플릿)
+    │   │   ├── base.html           # 공통 레이아웃
+    │   │   ├── dashboard/
+    │   │   │   └── index.html      # 대시보드 화면 (JS로 API 호출)
+    │   │   ├── agv/
+    │   │   │   └── index.html
+    │   │   └── log/
+    │   │       └── index.html
+    │   │
+    │   ├── static/                 # 🎨 정적 파일 (JS, CSS, 이미지)
+    │   │   ├── css/
+    │   │   │   └── main.css
+    │   │   ├── js/
+    │   │   │   ├── dashboard.js    # 여기서 fetch('/api/v1/...') 호출
+    │   │   │   └── agv.js
+    │   │   └── img/
+    │   │
+    │   ├── models/                 # 🗂 DB 모델(ORM)
+    │   │   ├── __init__.py         # SQLAlchemy 인스턴스 등
+    │   │   ├── dashboard.py        # 대시보드 관련 테이블
+    │   │   └── log.py              # 로그 테이블
+    │   │
+    │   ├── utils/                  # 🔧 공용 유틸리티
+    │   │   ├── __init__.py
+    │   │   ├── db.py               # DB 세션/초기화
+    │   │   ├── logger.py           # 로깅 관련
+    │   │   └── helpers.py          # 공통 함수들
+    │   │
+    │   └── hardware/               # 🤖 (나중 확장) 하드웨어 연동 모듈
+    │       ├── __init__.py
+    │       ├── modbus_client.py    # PLC 통신
+    │       ├── agv_client.py       # AGV 상태 조회/제어
+    │       └── robotarm_client.py  # 로봇암 연동
+    │
+    └── .vscode/                    # (선택) VSCode 설정
+        └── settings.json

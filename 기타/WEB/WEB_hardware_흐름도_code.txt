@@ -1,0 +1,19 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+    participant User as 사용자
+    participant Browser as 브라우저(HTML+JS)
+    participant Web as web/routes.py (HTML 렌더링)
+    participant API as api/v1/... (데이터/기능 API)
+    participant HW as Hardware/PLC/AGV
+    User->>Browser: /dashboard 접속
+    Browser->>Web: GET /dashboard
+    Web-->>Browser: index.html (렌더링됨)
+    Note over Browser: 화면에서 JS 실행<br/>데이터/명령 필요 시 API 호출
+    Browser->>API: GET /api/v1/agv/status (AJAX 요청)
+    API->>HW: ModbusMonitor.get_status() 실행
+    HW-->>API: 하드웨어 데이터
+    API-->>Browser: JSON 응답
+    Browser-->>User: 화면에 데이터 표시
