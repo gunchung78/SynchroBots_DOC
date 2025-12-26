@@ -1,0 +1,101 @@
+최종 프로젝트
+Web(Monitoring System), PLC, Vision Inspection, Robot Arm, AMR
+
+ESP32, L298N(Motor), MB102(Power)
+브레드보드 전원 공급 모듈(MB102) Size(w, l): 3.2 by 5.2
+모터 드라이버 모듈(L298N) Size(w, l): 4.3 x 4.3
+개발 보드(ESP32) Size(w, l): 2.8 x 5.1
+
+AMR - Elephant Robotics MyAGV 2023 Pi - ROS1 20.04 / python 3.8
+Robot Arm - Elephant Robotics MyCobot 320 M5 - ROS2 22.04 / python 3.10
+해상도 4:3 2592 x 1944
+
+1. Web (Monitoring System)
+모든 설비의 통합 관제 센터 역할을 수행하며, 실시간 현황 모니터링, 데이터 시각화, 원격 제어, 이력 관리를 담당합니다.
+
+통합 관제 대시보드: AGV, RobotArm, PLC의 실시간 상태와 KPI (가동률, Cycle Time 등)를 시각화합니다. 경로 이탈, 설비 이상 등 주요 이벤트를 즉시 표시합니다.
+이벤트/미션 로그 시스템: 모든 설비의 이벤트, 상태 변화, 알람을 DB에 구조화하여 자동 기록합니다. 장애 원인 분석 및 공정 개선을 위한 기간별 패턴 분석에 활용됩니다.
+장비 제어 패널: Web을 통해 AGV, RobotArm, PLC에 원격 제어 명령 (긴급정지/초기화/출력 제어)을 API로 즉시 전송하고, 모든 제어 이력을 로그로 기록합니다.
+
+PLC(Programmable Logic Control)
+컨베이어 벨트와 모듈의 흐름을 제어하고, PC 및 Robot Arm과의 정보 교환을 담당합니다.
+컨베이어 벨트, 서보 모터: 물체(모듈)의 물리적 이송을 제어합니다.
+Photo Sensor: 물체의 유무 및 위치를 감지하여 PLC에 신호를 전달합니다.
+HMI: 현장 작업자가 직접 PLC 및 공정 상태를 확인할 수 있는 인터페이스입니다.
+정보 교환: PC, Robot Arm과 연결되어 다양한 공정 정보를 주고받습니다.
+
+Computer Vision - 너츠 60fps 스트리밍 웹캠 SC-100
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+컨베이어 벨트 위 모듈에 대한 분류, 이상 감지, 로봇 핸들링을 위한 위치 인식을 수행합니다.
+Object Classification: 웹캠이 캡처한 이미지를 기반으로 현재 이송되는 모듈(MB102, L298N, ESP32)을 분류합니다.
+Anomaly Detection: 분류된 모듈 이미지에 대해 정상/비정상 여부를 판단하여 모듈의 품질을 검사합니다.
+Coordinate or Joint Detection: MyCobot 320 M5의 동작 자동화를 위해 컨베이어 벨트 위 모듈의 잡을 위치(좌표) 또는 관절(Angle) 값을 출력합니다.
+  Auto-Encoder 방법론으로 이상 탐지 모델 개발 -> 빠른 속도의 강점
+  Teacher Student 방법론으로 이상 탐지 모델 개발 -> 
+  Patch-Based Reconstruction - PatchCore, PaDiM -> 한 번의 모델 학습, 높은 정확도
+
+
+Robot Arm - Elephant Robotics MyCobot 320 M5 - ROS2 22.04 / python 3.10
+좌표 예측(Coordinate Tracking) AI 모델 - 분류 + 잔차 방법으로 해결
+Computer Vision에서 전달받은 정보를 바탕으로 모듈을 정밀하게 핸들링합니다.
+Vision 시스템의 Coordinate or Joint Detection 결과(좌표 또는 관절 값)를 입력받아 모듈을 정확하게 집거나 옮기는 등의 작업을 수행합니다.
+  Pick - 모든 색상과 보드를 탐지하기 위해 Binary 마스킹을 사용해 흰색 부분을 바운딩 박스를 침
+  최소 면적 바운딩 박스 방법을 활용해 보드가 가로로 잡아야할지 세로로 잡아야할지 결정함
+  Place - 빨간색 구역 탐지 후 선형 회귀 방식으로 좌표 값을 계산하여 이미지 캡처 후 Place
+
+AMR - Elephant Robotics MyAGV 2023 Pi - ROS1 20.04 / python 3.8
+자율 주행을 통해 물류 이송 작업을 수행하며, 전체 자동화 시스템의 물류 이동을 담당합니다.
+자율 주행: LiDAR 센서와 Computer Vision 기술을 융합하여 지도 작성, 위치 인식, 장애물 회피 등을 수행하며 지정된 경로를 자율적으로 이동합니다.
+물류 이송: 필요한 모듈 또는 제품을 지정된 장소로 운반합니다.
+
+Flow 설명
+PLC의 1번 photo sensor가 모듈을 인식하면 PLC가 PC에게 인식 신호를 전달
+PLC의 신호를 수신해 PC에 연결되어 있는 웹캠으로 컨베이어 벨트 시작 지점 위에 물체를 캡처
+캡처한 이미지는 Object Classification을 수행하는 AI 모델에게 전달되어 모듈을 분류
+캡처한 이미지는 anomaly detection을 수행하는 AI 모델에게 전달되어 이상 탐지
+이상 탐지 수행 후, 캡처한 이미지에 불량이 탐지되면 막대기가 달린 서보 모터가 동작해 컨베이어 벨트 밖으로 배출
+정상 모듈들은 컨베이어 벨트에서 이송 중 PLC의 2번 photo sensor가 모듈을 인식하면 PLC가 인식 신호를 전달
+PLC의 2번 photo sensor 인식 신호를 수신하면 컨베이어 벨트가 정지
+PLC의 2번 photo sensor 인식 신호를 수신하면 다이소 웹캠으로 컨베이어 벨트 도착 지점 위에 물체를 캡처
+캡처한 이미지는 mycobot robot arm의 Cordinate or Joint Detection을 수행하는 AI 모델에게 전달되어 모듈을 잡는 좌표 혹은 관절 값을 출력
+mycobot robot arm은 물체를 Pick한 후, AGV 위에 Place하지
+AGV는 place된 모듈에 해당하는 목적지로 자율 주행 하게 되지
+이 모든 과정을 Web에서 관제, 모니터링할 수 있고 AGV의 SLAM 연산 과정을 볼 수 있음
+
+1단계: 모듈 인식 및 1차 검사 (PLC와 Vision 연동)
+1-1. 물체 감지 - PLC (1번 Photo Sensor): 컨베이어 벨트 시작 지점에 모듈이 도착했음을 감지하고, PC로 인식 신호를 전달합니다.
+1-2. 이미지 캡처 - PC (너츠 웹캠): PLC 신호를 수신한 PC가 웹캠을 통해 컨베이어 벨트 위의 모듈 이미지를 캡처합니다.
+1-3. 모듈 분류 - Computer Vision (Object Classification): 캡처된 이미지를 기반으로 모듈의 종류(MB102, L298N, ESP32 등)를 분류합니다.
+1-4. 품질 검사 - Computer Vision (Anomaly Detection): 캡처된 이미지를 기반으로 모듈의 정상/비정상 여부를 이상 탐지합니다.
+
+2단계: 불량품 배출 및 정상품 이송 (PLC 제어)
+2-1. 불량품 처리 - PLC (서보 모터): 이상 탐지 결과 불량이 탐지되면, PLC 제어 하에 막대기가 달린 서보 모터가 동작하여 해당 모듈을 컨베이어 벨트 밖으로 배출합니다.
+2-2. 정상품 이송 - PLC (컨베이어 벨트): 정상 모듈은 컨베이어 벨트를 따라 계속 이송됩니다.
+
+3단계: 로봇 핸들링 준비 및 위치 인식 (PLC와 Vision 연동)
+3-1. 도착 감지 - PLC (2번 Photo Sensor): 정상 모듈이 로봇 핸들링 위치(컨베이어 벨트 도착 지점)에 도착했음을 감지하고, PC로 인식 신호를 전달합니다."
+3-2. 컨베이어 정지 - PLC: 2번 Photo Sensor 신호 수신과 동시에 모듈을 픽업하기 위해 컨베이어 벨트가 정지됩니다.
+3-3. 픽업 위치 캡처 - PC (다이소 웹캠): PLC 신호를 수신한 PC가 웹캠으로 정지된 모듈의 이미지를 캡처합니다.
+3-4. 픽업 정보 출력 - Computer Vision (Coordinate or Joint Detection): 캡처된 이미지 분석을 통해 MyCobot Robot Arm이 물체를 잡을 수 있는 좌표(Coordinate) 혹은 관절 값(Joint Value)을 출력합니다.
+
+4단계: 로봇 픽앤플레이스 및 AMR 물류 이동 (Robot Arm, AMR)
+4-1. 물체 픽업 - Robot Arm (MyCobot 320 M5): Vision AI 모델에서 전달받은 좌표/관절 값에 따라 정확하게 모듈을 집어(Pick) 올립니다.
+4-2. AMR에 배치 - Robot Arm (MyCobot 320 M5): 픽업한 모듈을 대기 중인 AGV (AMR) 위에 배치(Place)합니다.
+4-3. 물류 이송 - AMR (MyAGV 2023 Pi): 배치된 모듈의 종류에 해당하는 목적지로 자율 주행합니다. (LiDAR 및 Vision 기반 SLAM 연산 활용)
+
+5단계: 통합 관제 및 모니터링 (Web System)
+5-1. 실시간 모니터링 - Web Monitoring System: 위 1~4단계의 모든 과정 (PLC/Robot Arm/AGV 상태, KPI, 이벤트 발생)을 하나의 대시보드에서 실시간으로 관제합니다.
+5-2. SLAM 시각화 - Web Monitoring System: AGV의 자율 주행 및 SLAM 연산 과정 (지도 작성 및 위치 인식)을 화면에 표시하여 운영 상황을 파악할 수 있도록 합니다.
+
+요약
+1단계: 생산된 제품이 컨베이어 벨트를 따라 이송 중 photo sensor1에 의해 감지되면 즉시 생산품 이미지 촬영
+2단계: 촬영된 이미지는 AI 모델의 입력이 되어 Object Classification, Anomaly Detection 수행
+3단계: Anomaly Detection 결과가 불량품일 때 Servo Motor가 작동해 불량품을 컨베이어 벨트 밖으로 배출
+4단계: 컨베이어 벨트 마지막에 도착한 정상품은 Photo Sensor2가 인식하며, 로봇 팔이 이 정상품을 Pick하여 AGV (Automated Guided Vehicle)로 전달
+5단계: AGV는 정상품을 지정된 목적지로 운송
+6단계: Monitoring system을 도입하여 긴급 정지, 현황을 볼 수 있는 통계 제공
+
+생산 품이 컨베이어 벨트를 따라 이송 중 Photo Sensor에 의해 감지되면 이미지 촬영
+
+
+모니터링 시스템 도입으로 긴급 정지 및 현황 통계 제공

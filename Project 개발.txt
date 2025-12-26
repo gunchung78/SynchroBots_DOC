@@ -1,0 +1,43 @@
+PC 스펙
+
+NVIDIA GeForce RTX 2050
+CUDA v11.2
+_____________________________________________________________________________________
+제안서, 발표 관련 내용
+시연
+시연할 공간을 만들어 놓고 개발 진행할 것
+시연 동영상 만들어서 퍼포먼스 있게 보여주기(영상 편집 AI 활용)
+
+제안서에 작성해야할 것
+이런 문제가 있어서 이런 기술을 적용해 어떻게 해결하려 한다.
+필요한 이유에 대해서 알고 어떻게 해결할지
+기술의 가치를 알고 어떻게 적용해 해결할지를 제시해야한다.
+
+함수 주석, 설명 시 Input/Output/기능 3박자로 설명
+_____________________________________________________________________________________
+Computer Vision Tip
+Computer Vision - RGB로 인식하는 것보다 HSV로 변환한 후 인식하는 것이 좋다.
+흑/백 -> 흰색과 검은색 0, 1로 만 구성됨(연산량 최하)
+Gray scale -> 0~255의 값으로 회색조로 구성됨
+HSV -> 빛에 강건하다
+ROI를 지정해서 지정된 구역만 영상처리하는 방법도 있다.
+
+Hardware와 연결되어 Computer Vision 처리할 때, Delay 문제를 해결하기 위해서 Thread를 활용해야한다.
+
+Anomaly Detection - Diffusion, Transformer
+Object Detection - Reinforcement Learning
+Vision Language Action model
+
+AGV - Computer Vision
+Camera 2개로 거리를 측정할 수 있음
+_____________________________________________________________________________________
+Accuracy(정확도) - 전체 예측 중에서 올바르게 예측한 비율
+Precision(정밀도) - 예측 양성 중 실제가 양성인 비율
+Recall(재현율) - 실제 양성 중 예측이 양성인 비율
+F1 - 정밀도와 재현율의 조화 평균(2 * 곱/합)
+
+OCR 시간 단축
+
+Anomaly Detection - pytorch
+OCR - tensorflow
+Object Detection - tensorflow
